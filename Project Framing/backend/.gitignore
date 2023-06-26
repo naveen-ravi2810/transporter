@@ -1,0 +1,7 @@
+venv
+.env
+
+Models/__pycache__
+Sources/__pycache__
+
+__pycache__
