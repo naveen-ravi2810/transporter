@@ -5,11 +5,11 @@ load_dotenv()
 
 try:
     conn = pymysql.connect(host = os.getenv('sqlhost'),
-                       user = os.getenv('sqluser'),
-                       password = os.getenv('sqlpassword'),
-                       database= 'farming',
-                       cursorclass=pymysql.cursors.DictCursor
-                       )
+                        user = os.getenv('sqluser'),
+                        password = os.getenv('sqlpassword'),
+                        database= 'transporter',
+                        cursorclass=pymysql.cursors.DictCursor
+                        )
     cursor = conn.cursor()
 except:
     print( "Error in db",Exception)

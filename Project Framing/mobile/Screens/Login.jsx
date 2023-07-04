@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { AntDesign, Entypo } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -16,19 +16,19 @@ const Login = () => {
     async function login(event){
         event.preventDefault();
         try {
-            const response = await fetch('http://192.168.1.100:5000/login',{
+            const response = await fetch('http://192.168.66.54:5000/login',{
             method : 'POST',
             headers : { 'Content-Type': 'application/json' },
             body : JSON.stringify({ 'number' : userPhone ,'password' : userPassword})
         });
         const data = await response.json();
         if ( data.status ){
-            // AsyncStorage.setItem('Token',data.token);
+        AsyncStorage.setItem('Token',data.access_token);
             AsyncStorage.setItem('role',data.role);
             AsyncStorage.setItem('IsLoggedIn','true');
             navigation.replace('Dashboard');
         } else {
-            setError(data.message);
+            Alert.alert(data.message);
         }
         } catch  {
             console.warn('Backend error');   

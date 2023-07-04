@@ -1,4 +1,4 @@
-import { Button, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Alert, Button, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import React, { useState } from 'react';
 import { Fontisto } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,8 +9,24 @@ const Register = ({navigation}) => {
   const [userpassword, setuserpassword] = useState('');
   const [userphone, setuserphone] = useState('');
   const [userrole, setuserrole] = useState('farmer');
+  const [agreetermasandcondition, setagreetermasandcondition] = useState(false);
 
   const [showpasswordstatus, setshowpasswordstatus] = useState(false);
+
+  async function register(){
+    const response = await fetch('http://172.16.124.78:5000/register',{
+      method:'POST',
+      headers : { 'Content-Type': 'application/json' },
+      body : JSON.stringify({ 'name' : username ,'password' : userpassword, 'phone': userphone ,'role':userrole })
+    });
+    const data = await response.json();
+    if ( data.status ){
+      // Need to display register successful message
+      Alert.alert("Register Successfull, The team will contact you in two days");
+      navigation.replace('Login');
+    }
+    Alert.alert("Register Successfull, The team will contact you in two days");
+  }
 
   return (
     <View style={styles.register_page}>
@@ -18,7 +34,7 @@ const Register = ({navigation}) => {
         <Text style={styles.create_account_text}>Create Account</Text>
       </View>
       <View>
-        <TextInput style={styles.users_input} placeholder='user name' onChangeText={(Text)=>setusername(Text)}/>
+        <TextInput style={styles.users_input} placeholder='user name' onChangeText={(Text)=>setusername(Text)} />
         <TextInput style={styles.users_input} placeholder='password' secureTextEntry={showpasswordstatus? false : true} onChangeText={(Text)=>setuserpassword(Text)}/>
         <View style={styles.show_password_view}>
           {!showpasswordstatus ?
@@ -60,7 +76,18 @@ const Register = ({navigation}) => {
 
         </View>
       </View>
-      <TouchableOpacity style={styles.btn_register}>
+      <View style={styles.terms_and_condition_view}>
+          {!agreetermasandcondition ?
+            <Fontisto name="checkbox-passive" size={16} color="black" onPress={()=>setagreetermasandcondition(!agreetermasandcondition)}/>
+            :
+            <Fontisto name="checkbox-active" size={16} color="black" onPress={()=>setagreetermasandcondition(!agreetermasandcondition)}/>
+          }
+        <Text>  By clicking the checkbox you can agree the </Text>
+      </View>
+      <Text style={styles.terms_amd_conditions} 
+      // onPress={}
+      >terms and conditions.</Text>
+      <TouchableOpacity style={styles.btn_register} disabled={agreetermasandcondition ? false : true} onPress={register}>
         <Text style={styles.register_text}>
           Register
         </Text>
@@ -100,6 +127,7 @@ const styles = StyleSheet.create({
   },
   choose_role_text:{
     paddingLeft:20,
+    paddingBottom:10
   },
   select_user_role:{
     flexDirection:'row',
@@ -121,5 +149,15 @@ const styles = StyleSheet.create({
     textAlign:'center',
     fontWeight:'bold',
     fontSize:18
+  },
+  terms_and_condition_view:{
+    paddingLeft:20,
+    paddingTop:20,
+    flexDirection:'row',
+    alignItems:'center'
+  },
+  terms_amd_conditions:{
+    paddingLeft:20,
+    color:'blue'
   }
 })

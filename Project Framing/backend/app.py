@@ -5,7 +5,7 @@ from flask_jwt_extended import JWTManager
 
 from config import Config
 
-from Sources.users import Login, Register
+from Sources.users import Login, Register, Users, ApproveUser
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -15,6 +15,8 @@ api = Api(app)
 
 api.add_resource(Login, '/login')
 api.add_resource(Register, '/register')
+api.add_resource(Users, '/user/<usertype>')
+api.add_resource(ApproveUser, '/approveuser/<userid>/<usertype>')
 
 if __name__=="__main__":
-    app.run(debug=True, host='192.168.1.100')
+    app.run(debug=True ,host='192.168.66.54')
