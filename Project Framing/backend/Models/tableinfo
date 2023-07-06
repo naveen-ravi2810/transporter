@@ -1,18 +1,21 @@
-create table users(id integer primary key auto_increment, name varchar(50), 
-password varchar(250) Binary, phone bigint unique, role varchar(20), 
-status integer default 0);
+create table users(id integer primary key auto_increment, name varchar(50), password varchar(250) Binary, 
+phone bigint unique, role varchar(20), status integer default 0);
 
 
-create table farmers (farmer_id integer primary key auto_increment, id integer, 
-name varchar(50), phone bigint unique, landarea float, address varchar(500), 
+create table farmers (farmer_id integer primary key auto_increment, id integer, name varchar(50), 
+phone bigint unique, landarea float, address varchar(500), pincode integer);
+
+
+create table transporters (transporter_id integer primary key auto_increment, id integer, name varchar(50), 
+phone bigint unique, vehicle_number varchar(50), vehicle_name varchar(100), license_number varchar(70), 
+address varchar(500), pincode integer, secondary_verify integer default 0);
+
+
+create table warehouse (warehouse_id integer primary key auto_increment, id integer, name varchar(50), 
+phone bigint unique, warehouse_type varchar(100), warehouse_global_id varchar(100), address varchar(500), 
 pincode integer);
 
 
-create table transporters (transporter_id integer primary key auto_increment, id integer, 
-name varchar(50), phone bigint unique, vehicle_number varchar(50), vehicle_name varchar(100), 
-license_number varchar(70), address varchar(500), pincode integer);
-
-
-create table warehouse (warehouse_id integer primary key auto_increment, id integer, 
-name varchar(50), phone bigint unique, warehouse_type varchar(100), warehouse_global_id varchar(100), address varchar(500), 
-pincode integer);
+create table orders (order_id integer primary key auto_increment, farmer_id integer, transporter_id integer, 
+warehouse_id integer, order_on datetime, deliver_on datetime default null, product varchar(50))
+auto_increment = 10000000

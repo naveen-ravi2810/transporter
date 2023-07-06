@@ -24,7 +24,7 @@ class Login(Resource):
                         'role' : user['role'],
                         'status' : user['status']
                     })
-                    return jsonify({'status' : True, 'role':user['role'], 'access_token':access_token })
+                    return jsonify({'status' : True, 'name' : user['name'], 'role':user['role'], 'access_token':access_token })
                 else:
                     return jsonify({'status' : False, 'message':'You are not Approved yet'})
             return jsonify({'status' : False, 'message':'Incorrect Password'}) 
@@ -70,34 +70,37 @@ class ApproveUser(Resource):
     
     @admin_required()
     def post(self, userid, usertype):
-        data = request.get_json()
-        name = data['username']
-        phone = data['phone']
-        address = data['address']
-        pincode = data['pincode']
-        print(int(userid))
-        cursor.execute('''update users set status = 1 where id = %s''', int(userid))
-        conn.commit()
-        if usertype == 'farmer':
-            landarea = data['landarea']
-            cursor.execute('''insert into farmers (id, name, phone, landarea, address, pincode) values 
-            (%s, %s, %s, %s, %s, %s)''',(userid, name, phone, landarea, address, pincode))
+        try:
+            data = request.get_json()
+            name = data['username']
+            phone = data['phone']
+            address = data['address']
+            pincode = data['pincode']
+            cursor.execute('''update users set status = 1 where id = %s''', int(userid))
             conn.commit()
-            return jsonify({'status':True})
-        elif usertype == 'transporter':
-            vehicle_number = data['vehicle_number']
-            vehicle_name = data['vehicle_name']
-            license_number = data['license_number']
-            cursor.execute('''insert into transporters (id, name, phone, vehicle_number, vehicle_name, 
-            license_number, address, pincode ) values (%s, %s, %s, %s, %s, %s, %s, %s )''',(userid, 
-            name, phone, vehicle_number, vehicle_name, license_number, address, pincode))
-            conn.commit()
-            return jsonify({'status':True})
-        else :
-            warehouse_type = data['warehouse_type']
-            warehouse_global_id = data['warehouse_id']
-            cursor.execute('''insert into warehouse (id, name, phone, warehouse_type, warehouse_global_id, 
-            address ,pincode) values (%s, %s, %s, %s, %s, %s, %s)''',(userid, name, phone, warehouse_type, 
-            warehouse_global_id, address, pincode))
-            conn.commit()
-            return jsonify({'status':True})
+            if usertype == 'farmer':
+                landarea = data['landarea']
+                cursor.execute('''insert into farmers (id, name, phone, landarea, address, pincode) values 
+                (%s, %s, %s, %s, %s, %s)''',(userid, name, phone, landarea, address, pincode))
+                conn.commit()
+                return jsonify({'status':True})
+            elif usertype == 'transporter':
+                vehicle_number = data['vehicle_number']
+                vehicle_name = data['vehicle_name']
+                license_number = data['license_number']
+                cursor.execute('''insert into transporters (id, name, phone, vehicle_number, vehicle_name, 
+                license_number, address, pincode ) values (%s, %s, %s, %s, %s, %s, %s, %s )''',(userid, 
+                name, phone, vehicle_number, vehicle_name, license_number, address, pincode))
+                conn.commit()
+                return jsonify({'status':True})
+            else :
+                warehouse_type = data['warehouse_type']
+                warehouse_global_id = data['warehouse_id']
+                cursor.execute('''insert into warehouse (id, name, phone, warehouse_type, warehouse_global_id, 
+                address ,pincode) values (%s, %s, %s, %s, %s, %s, %s)''',(userid, name, phone, warehouse_type, 
+                warehouse_global_id, address, pincode))
+                conn.commit()
+                return jsonify({'status':True})
+        except:
+            return jsonify({'msg':'Mobile Already Exist'})
+        

@@ -2,6 +2,7 @@ from flask import Flask
 from flask_restful import Api
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
+import socket
 
 from config import Config
 
@@ -18,5 +19,10 @@ api.add_resource(Register, '/register')
 api.add_resource(Users, '/user/<usertype>')
 api.add_resource(ApproveUser, '/approveuser/<userid>/<usertype>')
 
+def get_ipv4_address():
+    hostname = socket.gethostname()
+    ip_address = socket.gethostbyname(hostname)
+    return ip_address
+
 if __name__=="__main__":
-    app.run(debug=True ,host='192.168.66.54')
+    app.run(debug=True ,host=get_ipv4_address())

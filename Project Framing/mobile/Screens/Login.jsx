@@ -1,22 +1,25 @@
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { AntDesign, Entypo } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Url from '../Components/Url';
+import Loading from '../Components/Loading';
 
 const Login = () => {
-
     const navigation = useNavigation();
     const [ShowPassword, setShowPassword] = useState(false);
 
     const [userPhone, setuserPhone] = useState('');
     const [userPassword, setuserPassword] = useState('');
     const [Error, setError] = useState('');
+
+    const [LoadingScreen, setLoadingScreen] = useState(true);
       
     async function login(event){
         event.preventDefault();
         try {
-            const response = await fetch('http://192.168.66.54:5000/login',{
+            const response = await fetch(`${Url()}/login`,{
             method : 'POST',
             headers : { 'Content-Type': 'application/json' },
             body : JSON.stringify({ 'number' : userPhone ,'password' : userPassword})
@@ -25,7 +28,8 @@ const Login = () => {
         if ( data.status ){
         AsyncStorage.setItem('Token',data.access_token);
             AsyncStorage.setItem('role',data.role);
-            AsyncStorage.setItem('IsLoggedIn','true');
+            AsyncStorage.setItem('name',data.name)
+            AsyncStorage.setItem('IsLoggedIn','Loggedin');
             navigation.replace('Dashboard');
         } else {
             Alert.alert(data.message);

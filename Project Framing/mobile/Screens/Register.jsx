@@ -2,6 +2,7 @@ import { Alert, Button, StyleSheet, Text, TextInput, TouchableOpacity, View } fr
 import React, { useState } from 'react';
 import { Fontisto } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
+import Url from '../Components/Url';
 
 const Register = ({navigation}) => {
 
@@ -14,7 +15,7 @@ const Register = ({navigation}) => {
   const [showpasswordstatus, setshowpasswordstatus] = useState(false);
 
   async function register(){
-    const response = await fetch('http://172.16.124.78:5000/register',{
+    const response = await fetch(`${Url()}/register`,{
       method:'POST',
       headers : { 'Content-Type': 'application/json' },
       body : JSON.stringify({ 'name' : username ,'password' : userpassword, 'phone': userphone ,'role':userrole })
