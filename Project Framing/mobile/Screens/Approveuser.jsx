@@ -1,12 +1,25 @@
 import { Alert, StyleSheet, Text, View, Modal, TextInput, Button, TouchableOpacity, RefreshControl } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Entypo ,Fontisto, MaterialIcons } from '@expo/vector-icons';
+import { Entypo ,Fontisto, MaterialIcons, Ionicons, AntDesign, Feather  } from '@expo/vector-icons';
 import Url from '../Components/Url';
 import Loading from '../Components/Loading';
 import Navbar from '../Components/Navbar';
+import { Dropdown } from 'react-native-element-dropdown';
+import { FA5Style } from '@expo/vector-icons/build/FontAwesome5';
+
+
+const data = [
+    { label : 'All', value : 'all'},
+    { label : 'Farmer', value : 'farmer'},
+    { label : 'Transporter', value : 'transporter'},
+    { label : 'warehouse', value : 'warehouse'}
+];
 
 const Approveuser = ({navigation}) => {
+
+    const [value, setValue] = useState('all');
+    const [isFocus, setIsFocus] = useState(false);
 
   const [isLoading, setisLoading] = useState(true);
   const [ShowNavbar, setShowNavbar] = useState(false);
@@ -15,17 +28,25 @@ const Approveuser = ({navigation}) => {
   const [TransporterDetail, setTransporterDetail] = useState(false);
   const [WarehouseDetail, setWarehouseDetail] = useState(false);
   const [removetheuser, setremovetheuser] = useState(false);
-  const [message, setMessage] = useState(null);
+  const [moreinapproved, setmoreinapproved] = useState(false);
+
   const [statustype, setstatustype] = useState('notapproved');
   const [Error, setError] = useState('');
   const [users, setUsers] = useState([]);
   const [EditUser, setEditUser] = useState([]);
 
+  const [UserReloadTime, setUserReloadTime] = useState(0);
+  const [LastReloadTime, setLastReloadTime] = useState('Updated Few Seconds Ago');
+
   const [WarehouseType, setWarehouseType] = useState('government');
   const [warehouseid, setwarehouseid] = useState();
 
+  const [VehicleNumber, setVehicleNumber] = useState('');
+  const [VehicleName, setVehicleName] = useState('');
+  const [LicenseNumber, setLicenseNumber] = useState('');
+
   const [SearchUser, setSearchUser] = useState();
-  
+  const [moreinapproved_option, setmoreinapproved_option] = useState('');  
   // T set the farmer land type
   const [AreaType, setAreaType] = useState('Undefined');
   const [FarmerArea, setFarmerArea] = useState('');
@@ -40,31 +61,56 @@ const Approveuser = ({navigation}) => {
   };
   
   // To set the Details of the users
-  useEffect(() => {
-    const fetchData = async () => {
-      setisLoading(true);
-      const token = await AsyncStorage.getItem('Token');
-      try {
-        const response = await fetch(`${Url()}/user/${statustype}`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setUsers(data.users);
-          setisLoading(false);
-        } else {
-          setError("Unauthorized");
+  const fetchData = async () => {
+    setisLoading(true);
+    setUserReloadTime(0);
+    const token = await AsyncStorage.getItem('Token');
+    try {
+      const response = await fetch(`${Url()}/user/${statustype}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
         }
-      } catch (error) {
-        setError("An error occurred");
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setUsers(data.users);
+        setisLoading(false);
+        setError();
+        setLastReloadTime('Updated Few Seconds Ago');
+      } else {
+        setisLoading(false);
+        setError("Unauthorized");
       }
-    };   
+    } catch (error) {
+      setisLoading(false);
+      setError("An error occurred");
+    }
+  }; 
+  useEffect(() => {  
+    
     fetchData();
+    
   }, [statustype]);
   
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setUserReloadTime(UserReloadTime + 10);
+    }, 10000);
+    if(UserReloadTime >= 10 && UserReloadTime < 30){
+      setLastReloadTime("Updated 10 seconds ago");
+    } else if (UserReloadTime >= 30 && UserReloadTime <60){
+      setLastReloadTime("Updated 30 Seconds ago");
+    } else if (UserReloadTime >= 60) {
+      const minutesAgo = Math.floor(UserReloadTime / 60);
+      setLastReloadTime(`Updated ${minutesAgo} minutes Ago`);
+    }
+  
+    return () => clearInterval(interval);
+  }, [UserReloadTime]);
+  
+  
+
   // To pop up the Add_user Modal
   function add_user(user){
     setEditUser(user);
@@ -72,9 +118,9 @@ const Approveuser = ({navigation}) => {
       setFarmerDetail(true);
     } else if (user.role == 'transporter' ){
       setTransporterDetail(true);
-    } else{
+    } else if (user.role == 'warehouse'){
       setWarehouseDetail(true);
-    }
+    } 
   }
   
   // To get Location details by pincode
@@ -101,6 +147,10 @@ const Approveuser = ({navigation}) => {
       console.log('An error occurred while fetching location details:', error);
     }
   }
+
+  function show_more_option (user){
+    setmoreinapproved(true);
+  }
   
   // To style the view of the users
   const get_user_role = (role) => {
@@ -115,21 +165,20 @@ const Approveuser = ({navigation}) => {
         return styles.admin;
       }
     };
-    
-    async function add_farmer(event){
-      event.preventDefault();
+
+    async function add_new_user(){
       try{
         const token = await AsyncStorage.getItem('Token');
         const response = await fetch(`${Url()}/approveuser/${EditUser.id}/${EditUser.role}`,{
           method:'POST',
           headers:{
             'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json' 
+            'Content-Type': 'application/json'  
           },
           body: JSON.stringify(
             // { 'username':EditUser.name, 'phone':EditUser.phone, 'address':address_of_new_user, 'pincode':PinCode, 'landarea':FarmerArea }
             edit_user_details()
-            )
+          )
         });
         const data = await response.json();
         if(data.status){
@@ -151,10 +200,17 @@ const Approveuser = ({navigation}) => {
       } catch{
         console.warn("Farmer error");
       }
-    };
+    }
+    
 
     function edit_user_details (){
-      return ({ 'username':EditUser.name, 'phone':EditUser.phone, 'address':address_of_new_user, 'pincode':PinCode, 'landarea':FarmerArea })
+      if( FarmerDetail==true ){
+        return ({ 'username':EditUser.name, 'phone':EditUser.phone, 'address':address_of_new_user, 'pincode':PinCode, 'landarea':FarmerArea })
+      } else if (WarehouseDetail == true){
+        return ({ 'username':EditUser.name, 'phone':EditUser.phone, 'address':address_of_new_user, 'pincode':PinCode, 'warehouse_type':WarehouseType, 'warehouse_id':warehouseid})
+      } else {
+        return ({ 'username':EditUser.name, 'phone':EditUser.phone, 'address':address_of_new_user, 'pincode':PinCode, 'vehicle_number':VehicleNumber, 'vehicle_name':VehicleName, 'license_number':LicenseNumber})
+      }
     }
   
   function remove_user(user){
@@ -168,6 +224,12 @@ const Approveuser = ({navigation}) => {
     AsyncStorage.removeItem('role');
     navigation.replace('Login');
   };
+
+  function new_user(){
+    setcity('');
+    setstate('');
+    setdistrict('');
+  }
     
   return (
     <View style={{flex:1,backgroundColor:'lightgreen', paddingVertical:20, paddingHorizontal:10}}>
@@ -175,7 +237,7 @@ const Approveuser = ({navigation}) => {
         <View style={styles.page_heading}>
           <Text onPress={()=>setShowNavbar(true)} style={{paddingLeft:10}}><Entypo name="menu" size={24} color="black" /></Text>
           <Text style={{fontSize:20, color:'white', fontWeight:'bold'}}>APPROVE USER</Text>
-          <Text></Text>
+          <Text style={{paddingRight:10}}><Ionicons onPress={()=>fetchData()} name="reload" size={24} color="black" /></Text>
         </View>
       {/* <View style={{justifyContent:'space-between', backgroundColor:'green', margin:10, flexDirection:'row', alignItems:'center', paddingHorizontal:10}}>
         <Text style={{textAlign:'center', fontSize:20, paddingVertical:10, color:'white'}}>Approveuser</Text>
@@ -205,25 +267,49 @@ const Approveuser = ({navigation}) => {
         </Text>
       </View>
 
+      {/* DropDown to select the View User */}
+      <View style={{width:'40%', paddingLeft:10}}>
+      <Dropdown
+          style={{borderWidth:1, paddingLeft:10, paddingRight:10, height:25}}
+          data={data}
+          maxHeight={250}
+          labelField="label"
+          valueField="value"
+          value={value}
+          onFocus={() => setIsFocus(true)}
+          onBlur={() => setIsFocus(false)}
+          onChange={item => {
+            setValue(item.value);
+          }}
+          
+        />
+      </View>
+
       {/* Search Box to search by Name and Phone Number */}
       <TextInput style={{margin:10, borderWidth:1, fontSize:10, paddingLeft:10, }} placeholder='Search by Phone or Name' value={SearchUser} onChangeText={(Text)=>setSearchUser(Text)} keyboardType='email-address'/>
       
+          {/* Page Number */}
 
-      <View style={styles.approveuser_content}>
+
+      <View style={styles.approveuser_content} >
         {isLoading ? <Loading/> :
-        <View >
+        <View>
         {(users !== []) ? 
         <View>
           {users.map((user) => {
           {if ( ((user.name).toLowerCase()).includes(SearchUser) || SearchUser == null 
             // || ((user.phone).toString()).includes(SearchUser) 
-            )
+             && (user.role == value || value == 'all'))
           return (
                 <View style={get_user_role(user.role)} key={user.id}>
+                  {Error && <Text>{Error}</Text>}
                   <View style={[styles.user_name, {paddingRight:10}]}><Text numberOfLines={1} style={{color:'black'}}>{user.name}</Text></View>
                   <View style={styles.user_role}><Text style={{color:'black'}}>{user.role}</Text></View>
                   <View style={styles.user_phone}><Text style={{color:'black'}}>{user.phone}</Text></View>
-                  {statustype == 'notapproved' &&
+                  {statustype === 'approved' && 
+                    <View><Text onPress={()=>show_more_option(user)}><Feather name="more-vertical" size={24} color="black" /></Text></View>
+                  }
+                  {statustype === 'notapproved' &&
                     <View style={styles.user_add}>
                       <Text onPress={()=>add_user(user)}><Entypo name="add-user" size={24} color="black" /></Text>
                       <Text>   </Text>
@@ -261,7 +347,7 @@ const Approveuser = ({navigation}) => {
               </TouchableOpacity>
             </View>
             <Text>Farmer Type : {AreaType}</Text>
-            <TextInput style={{width:200}} placeholder='Address' value={address_of_new_user} onChangeText={(Text)=>setaddressofnewuser(Text)}/>
+            <TextInput style={{width:200}} placeholder='Address' onChangeText={(Text)=>setaddressofnewuser(Text)}/>
             <View style={{ flexDirection:'row', alignItems:'center' }}>
               <TextInput style={{marginRight:10}} onChangeText={(Text)=>setPinCode(Text)} keyboardType='phone-pad' placeholder='Pincode'/>
               <Text onPress={get_location_by_pincode}>Verify</Text>
@@ -270,7 +356,7 @@ const Approveuser = ({navigation}) => {
             <TextInput value={district} placeholder='District' editable={false}/>
             <TextInput value={state} placeholder='State' editable={false}/>
             <Text></Text>
-            <Button title='Save' onPress={add_farmer}/>
+            <Button title='Save' onPress={()=>add_new_user()}/>
             <Text></Text>
             <Button title='Cancel' onPress={()=>setFarmerDetail(!FarmerDetail)}/>
           </View>
@@ -284,10 +370,10 @@ const Approveuser = ({navigation}) => {
               <Text>Additional Transporter Details</Text>
               <Text style={{paddingVertical:5}}>Name:  {EditUser.name}</Text>
               <Text style={{paddingVertical:5}}>Phone: {EditUser.phone}</Text>
-              <TextInput placeholder='Vehicle Number'/>
-              <TextInput placeholder='Vehicle Name' />
-              <TextInput placeholder='License Number' />
-              <TextInput style={{width:200}} placeholder='Address'/>
+              <TextInput placeholder='Vehicle Number' onChangeText={(Text)=>setVehicleNumber(Text)} />
+              <TextInput placeholder='Vehicle Name' onChangeText={(Text)=>setVehicleName(Text)} />
+              <TextInput placeholder='License Number' onChangeText={(Text)=>setLicenseNumber(Text)} keyboardType='number-pad'/>
+              <TextInput style={{width:200}} placeholder='Address' onChangeText={(Text)=>setaddressofnewuser(Text)}/>
               <View style={{ flexDirection:'row', alignItems:'center' }}>
                 <TextInput style={{marginRight:10}} onChangeText={(Text)=>setPinCode(Text)} keyboardType='phone-pad' placeholder='Pincode'/>
                 <Text onPress={get_location_by_pincode}>Verify</Text>
@@ -295,7 +381,7 @@ const Approveuser = ({navigation}) => {
               <TextInput value={city} placeholder='City' editable={false}/>
               <TextInput value={district} placeholder='District' editable={false}/>
               <TextInput value={state} placeholder='State' editable={false}/>
-              <Button title='Save'/>
+              <Button title='Save' onPress={()=>add_new_user()}/>
               <Text></Text>
               <Button title='Cancel' onPress={()=>setTransporterDetail(!TransporterDetail)}/>
             </View>
@@ -321,8 +407,8 @@ const Approveuser = ({navigation}) => {
             <Fontisto name="checkbox-passive" size={16} color="black" onPress={()=>setWarehouseType('private')}/>
           } Private</Text>
           </View>
-          <TextInput placeholder='Warehouse ID' onChangeText={(Text)=>setwarehouseid(Text)}/>
-          <TextInput style={{width:200}} placeholder='Address'/>
+          <TextInput placeholder='Warehouse ID' value={warehouseid} onChangeText={(Text)=>setwarehouseid(Text)}/>
+          <TextInput style={{width:200}} placeholder='Address' onChangeText={(Text)=>setaddressofnewuser(Text)}/>
             <View style={{ flexDirection:'row', alignItems:'center' }}>
               <TextInput style={{marginRight:10}} onChangeText={(Text)=>setPinCode(Text)} keyboardType='phone-pad' placeholder='Pincode'/>
               <Text onPress={get_location_by_pincode}>Verify</Text>
@@ -330,7 +416,7 @@ const Approveuser = ({navigation}) => {
             <TextInput value={city} placeholder='City' editable={false}/>
             <TextInput value={district} placeholder='District' editable={false}/>
             <TextInput value={state} placeholder='State' editable={false}/>
-            <Button title='Save'/>
+            <Button title='Save' onPress={()=>add_new_user}/>
             <Text></Text>
             <Button title='Cancel' onPress={()=>setWarehouseDetail(!WarehouseDetail)}/>
         </View>
@@ -352,11 +438,36 @@ const Approveuser = ({navigation}) => {
 
 
     </View>
-    <Modal style={{}} visible={ShowNavbar} transparent={true}>
+    <Modal style={{}} visible={ShowNavbar} animationType='slide' transparent={true}>
       <View style={{ flex:1,width:200,}}>
         {ShowNavbar && <Navbar navigation={navigation} path={'approveuser'} setShowNavbar={setShowNavbar}/>}
       </View>
-      </Modal>
+    </Modal>
+
+    <Modal visible={moreinapproved} animationType='slide' transparent={true}>
+      <View style={styles.model_container}>
+        <View style={styles.model_text_container}>
+          <Text>Select Option</Text>
+          <Text onPress={()=>setmoreinapproved_option('move_to_notapproved')}>
+          {moreinapproved_option == "move_to_notapproved" ?
+            <Fontisto name="checkbox-active" size={16} color="black" />
+            :
+            <Fontisto name="checkbox-passive" size={16} color="black" />
+          } Move to not approved 
+          </Text>
+          <Button title='Cancel' onPress={()=>setmoreinapproved(!moreinapproved)}/>
+        </View>
+      </View>
+    </Modal>
+
+      <View style={{ flexDirection:'row', alignItems:'flex-end', justifyContent:'flex-start', flex:1}}>
+        <View style={{ backgroundColor: 'blue', height: 40, flexDirection: 'row', alignItems: 'center', paddingHorizontal: '5%' }}>
+        <Text style={{ fontSize: 16, color: 'white' }}>
+            {LastReloadTime}
+        </Text>
+      </View>
+    </View>
+
     </View>
   )
 }

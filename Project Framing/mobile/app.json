@@ -33,5 +33,13 @@
       }
     },
     "owner": "naveen_ravi"
-  }
+  },
+  "plugins": [
+    [
+      "expo-location",
+      {
+        "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
+      }
+    ]
+  ]
 }

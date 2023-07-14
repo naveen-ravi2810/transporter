@@ -1,10 +1,11 @@
-import { Alert, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View, Image } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { AntDesign, Entypo } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Url from '../Components/Url';
 import Loading from '../Components/Loading';
+import logo from "./../assets/logo.png"
 
 const Login = () => {
     const navigation = useNavigation();
@@ -40,15 +41,17 @@ const Login = () => {
     }
 
   return (
-    <View style={styles.login_page}>
-        <View style={styles.logo}>
-            <Text>Logo</Text>
+    <View style={styles.login_page} >
+        <View style={styles.logoContainer}>
+            <Image source={logo} style={styles.logo} />
         </View>
-        <View style={styles.mobile_number_field}>
-            <Text style={styles.mobile_number}>Mobile Number</Text>
-            <TextInput keyboardType='number-pad' style={styles.mobile_number_input} onChangeText={(Text)=>setuserPhone(Text)}/>
+        <View style={{paddingHorizontal:"10%"}}>
+            <View style={styles.mobile_number_field}>
+                <Text style={styles.mobile_number}>Mobile Number</Text>
+                <TextInput keyboardType='number-pad' style={styles.mobile_number_input} onChangeText={(Text)=>setuserPhone(Text)}/>
+            </View>
         </View>
-        <View>
+        <View style={{paddingHorizontal:'10%'}}>
             <Text style={styles.password}>Password</Text>
             <View style={styles.password_field}>
                 <TextInput secureTextEntry= {ShowPassword ? false: true } style={styles.password_input} onChangeText={(Text)=>setuserPassword(Text)}/>
@@ -76,23 +79,17 @@ export default Login
 
 const styles = StyleSheet.create({
     login_page:{
-        marginTop:30,
-        paddingHorizontal:10,
-        flex:1
-    },
-    logo:{
-        justifyContent:'center',
-        alignItems:'center',
-        paddingVertical:20,
-        backgroundColor:'green'
+        paddingVertical:'25%',
+        flex:1,
+        
     },
     password_field:{
         flexDirection:'row',
         alignItems:'center',
-        columnGap:10,
+        justifyContent:'space-between',
         borderWidth:1,
         borderRadius:20,
-        alignItems:'center'
+        paddingHorizontal:'5%'
     },
     mobile_number_input:{
         borderRadius:20,
@@ -115,8 +112,7 @@ const styles = StyleSheet.create({
     },
     password_input:{
         height:50,
-        width:330,
-        paddingLeft:10
+        width:'90%'
     },
     create_account:{
         flexDirection:'row'
@@ -128,12 +124,25 @@ const styles = StyleSheet.create({
         backgroundColor:'lightgreen',
         paddingVertical:10,
         alignItems:'center',
+        width:'30%',
+        borderRadius:100
     },
     btn_login_view:{
-        paddingVertical:20
+        paddingVertical:20,
+        flexDirection:'row',
+        justifyContent:'center',
     },
     login_text:{
         fontSize:28,
         fontWeight: 'bold'
-    }
+    },
+    logoContainer: {
+        height: 100, // Set a fixed height or adjust as needed
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      logo: {
+        flex: 1,
+        resizeMode: 'contain',
+      },
 })

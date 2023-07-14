@@ -7,8 +7,8 @@ from Models.auth import admin_required
 from flask_jwt_extended import create_access_token
 
 class Login(Resource):
-    # def get(self):
-    #     return "Hi"
+    def get(self):
+        return "Hi"
     
     def post(self):
         data = request.get_json()
