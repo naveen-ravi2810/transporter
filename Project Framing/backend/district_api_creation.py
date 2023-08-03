@@ -1,32 +1,17 @@
+import bcrypt
 import pymysql
 
-
-conn = pymysql.connect(host = 'localhost',
-                        user = 'root',
-                        password = 'tiger',
-                        database= 'api',
+password = "madhu"
+hashed_pw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+print(hashed_pw)
+conn = pymysql.connect(host = 'database-2.cwaohnk7rqfh.us-east-1.rds.amazonaws.com',
+                        user = 'admin',
+                        password = 'TheNewPasswordfordatabaseofprintmajesty',
+                        database= 'PrintMajesty',
                         cursorclass=pymysql.cursors.DictCursor
                         )
 cursor = conn.cursor()
 
-districts = [
-    "Anantapur",
-    "Chittoor",
-    "East Godavari",
-    "Guntur",
-    "Krishna",
-    "Kurnool",
-    "Prakasam",
-    "Srikakulam",
-    "Sri Potti Sriramulu Nellore",
-    "Visakhapatnam",
-    "Vizianagaram",
-    "West Godavari",
-    "YSR Kadapa"
-]
-
-
-
-for districts_list in districts:
-    cursor.execute('insert into india_district (district, state) values (%s, "Andrapradesh")',(districts_list))
-    conn.commit()
+# cursor.execute("delete from users where name='admin'")
+cursor.execute("insert into users (name, email, password, role) values ('madhumohan', 'madhumohanmadhumohan3@gmail.com', %s, 'admin')",(hashed_pw))
+conn.commit()

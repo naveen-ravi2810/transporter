@@ -7,6 +7,8 @@ import Loading from '../Components/Loading';
 import Navbar from '../Components/Navbar';
 import { Dropdown } from 'react-native-element-dropdown';
 import { FA5Style } from '@expo/vector-icons/build/FontAwesome5';
+import { EvilIcons } from '@expo/vector-icons';
+import * as Location from 'expo-location';
 
 
 const data = [
@@ -124,29 +126,12 @@ const Approveuser = ({navigation}) => {
   }
   
   // To get Location details by pincode
+  const [ErrorMsg, setErrorMsg] = useState('')
   const [PinCode, setPinCode] = useState();
   const [address_of_new_user, setaddressofnewuser] = useState('');
-  const [city, setcity] = useState('');
-  const [district, setdistrict] = useState('');
-  const [state, setstate] = useState('');
-  async function get_location_by_pincode() {
-    try {
-      const response = await fetch(`https://api.postalpincode.in/pincode/${PinCode}`);
-      const data = await response.json();
-      
-      if (data[0].Status === 'Success') {
-        const postOfficeDetails = data[0].PostOffice;
-        const final_location_details = postOfficeDetails[0]
-        setcity(final_location_details.Block);
-        setdistrict(final_location_details.District);
-        setstate(final_location_details.State)
-      } else {
-        Alert.alert('Location details not found.');
-      }
-    } catch (error) {
-      console.log('An error occurred while fetching location details:', error);
-    }
-  }
+  const [District, setDistrict] = useState(null);
+  const [Latitude, setLatitude] = useState('');
+  const [Longitude, setLongitude] = useState('');
 
   function show_more_option (user){
     setmoreinapproved(true);
@@ -167,6 +152,7 @@ const Approveuser = ({navigation}) => {
     };
 
     async function add_new_user(){
+      console.warn("Wanr")
       try{
         const token = await AsyncStorage.getItem('Token');
         const response = await fetch(`${Url()}/approveuser/${EditUser.id}/${EditUser.role}`,{
@@ -188,10 +174,6 @@ const Approveuser = ({navigation}) => {
           setAreaType('undefined');
           setFarmerArea('');
           setaddressofnewuser('');
-          setcity('');
-          setdistrict('');
-          setstate('');
-          setPinCode('');
           setError();
         }
         else{
@@ -207,7 +189,7 @@ const Approveuser = ({navigation}) => {
       if( FarmerDetail==true ){
         return ({ 'username':EditUser.name, 'phone':EditUser.phone, 'address':address_of_new_user, 'pincode':PinCode, 'landarea':FarmerArea })
       } else if (WarehouseDetail == true){
-        return ({ 'username':EditUser.name, 'phone':EditUser.phone, 'address':address_of_new_user, 'pincode':PinCode, 'warehouse_type':WarehouseType, 'warehouse_id':warehouseid})
+        return ({ 'username':EditUser.name, 'phone':EditUser.phone, 'address':address_of_new_user, 'warehouse_type':WarehouseType,'pincode':PinCode, 'warehouse_id':warehouseid})
       } else {
         return ({ 'username':EditUser.name, 'phone':EditUser.phone, 'address':address_of_new_user, 'pincode':PinCode, 'vehicle_number':VehicleNumber, 'vehicle_name':VehicleName, 'license_number':LicenseNumber})
       }
@@ -226,9 +208,7 @@ const Approveuser = ({navigation}) => {
   };
 
   function new_user(){
-    setcity('');
-    setstate('');
-    setdistrict('');
+
   }
     
   return (
@@ -348,13 +328,10 @@ const Approveuser = ({navigation}) => {
             </View>
             <Text>Farmer Type : {AreaType}</Text>
             <TextInput style={{width:200}} placeholder='Address' onChangeText={(Text)=>setaddressofnewuser(Text)}/>
-            <View style={{ flexDirection:'row', alignItems:'center' }}>
-              <TextInput style={{marginRight:10}} onChangeText={(Text)=>setPinCode(Text)} keyboardType='phone-pad' placeholder='Pincode'/>
-              <Text onPress={get_location_by_pincode}>Verify</Text>
-            </View>
-            <TextInput value={city} placeholder='City' editable={false}/>
+            {/* <Text><EvilIcons onPress={()=>get_location()} name="location" size={40} color="black"/></Text> */}
+            {/* <TextInput value={city} placeholder='City' editable={false}/>
             <TextInput value={district} placeholder='District' editable={false}/>
-            <TextInput value={state} placeholder='State' editable={false}/>
+            <TextInput value={state} placeholder='State' editable={false}/> */}
             <Text></Text>
             <Button title='Save' onPress={()=>add_new_user()}/>
             <Text></Text>
@@ -374,13 +351,10 @@ const Approveuser = ({navigation}) => {
               <TextInput placeholder='Vehicle Name' onChangeText={(Text)=>setVehicleName(Text)} />
               <TextInput placeholder='License Number' onChangeText={(Text)=>setLicenseNumber(Text)} keyboardType='number-pad'/>
               <TextInput style={{width:200}} placeholder='Address' onChangeText={(Text)=>setaddressofnewuser(Text)}/>
-              <View style={{ flexDirection:'row', alignItems:'center' }}>
-                <TextInput style={{marginRight:10}} onChangeText={(Text)=>setPinCode(Text)} keyboardType='phone-pad' placeholder='Pincode'/>
-                <Text onPress={get_location_by_pincode}>Verify</Text>
-              </View>
-              <TextInput value={city} placeholder='City' editable={false}/>
+              {/* <Text><EvilIcons onPress={()=>get_location()} name="location" size={40} color="black"/></Text> */}
+              {/* <TextInput value={city} placeholder='City' editable={false}/>
               <TextInput value={district} placeholder='District' editable={false}/>
-              <TextInput value={state} placeholder='State' editable={false}/>
+              <TextInput value={state} placeholder='State' editable={false}/> */}
               <Button title='Save' onPress={()=>add_new_user()}/>
               <Text></Text>
               <Button title='Cancel' onPress={()=>setTransporterDetail(!TransporterDetail)}/>
@@ -409,14 +383,11 @@ const Approveuser = ({navigation}) => {
           </View>
           <TextInput placeholder='Warehouse ID' value={warehouseid} onChangeText={(Text)=>setwarehouseid(Text)}/>
           <TextInput style={{width:200}} placeholder='Address' onChangeText={(Text)=>setaddressofnewuser(Text)}/>
-            <View style={{ flexDirection:'row', alignItems:'center' }}>
-              <TextInput style={{marginRight:10}} onChangeText={(Text)=>setPinCode(Text)} keyboardType='phone-pad' placeholder='Pincode'/>
-              <Text onPress={get_location_by_pincode}>Verify</Text>
-            </View>
-            <TextInput value={city} placeholder='City' editable={false}/>
+          {/* <Text><EvilIcons onPress={()=>get_location()} name="location" size={40} color="black"/></Text> */}
+            {/* <TextInput value={city} placeholder='City' editable={false}/>
             <TextInput value={district} placeholder='District' editable={false}/>
-            <TextInput value={state} placeholder='State' editable={false}/>
-            <Button title='Save' onPress={()=>add_new_user}/>
+            <TextInput value={state} placeholder='State' editable={false}/> */}
+            <Button title='Save' onPress={()=>add_new_user()}/> 
             <Text></Text>
             <Button title='Cancel' onPress={()=>setWarehouseDetail(!WarehouseDetail)}/>
         </View>

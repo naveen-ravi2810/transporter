@@ -6,7 +6,7 @@ import socket
 
 from config import Config
 
-from Sources.users import Login, Register, Users, ApproveUser
+from Sources.users import Login, Register, Users, ApproveUser, Profile
 
 from Sources.warehouse import Warehouse
 
@@ -20,11 +20,12 @@ api.add_resource(Login, '/login')
 api.add_resource(Register, '/register')
 api.add_resource(Users, '/user/<usertype>')
 api.add_resource(ApproveUser, '/approveuser/<userid>/<usertype>')
+api.add_resource(Profile, '/profile')
 
-api.add_resource(Warehouse, '/get_warehouse/<string:id>')
+api.add_resource(Warehouse, '/get_warehouse/<string:district>')
 
-
-
+from Sources.orders import OrdersforFarmer
+api.add_resource(OrdersforFarmer, '/placeorder')
 
 def get_ipv4_address():
     hostname = socket.gethostname()

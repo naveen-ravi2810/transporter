@@ -1,4 +1,4 @@
-import { Button, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Button, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, FlatList } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Loading from '../Components/Loading';
@@ -8,39 +8,14 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Dropdown } from 'react-native-element-dropdown';
 import Url from '../Components/Url';
 import { EvilIcons } from '@expo/vector-icons';
+import { AntDesign } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 
 const Dashboard = ({navigation}) => {
-
-  const [location, setLocation] = useState(null)
-  async function getLocation(){
-    let { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== 'granted') {
-      setErrorMsg('Permission to access location was denied');
-      return;
-    };
-    let location = await Location.getCurrentPositionAsync({});
-    console.log("Fine da parama")
-    setCurrentLocationCoord(location);
-  };
-  const [CurrentLocationCoord, setCurrentLocationCoord] = useState('');
   
-  // Use Effect to find district name by location co-ordinates
-  useEffect(()=>{
-    if (!CurrentLocationCoord == ''){
-      let coords = CurrentLocationCoord['coords'];
-      get_district_by_lat_lon(coords['latitude'], coords['longitude'])
-    }
-  },[CurrentLocationCoord]);
-
-  const [CurrentDistrictName, setCurrentDistrictName] = useState('')
-  async function get_district_by_lat_lon(lat, long){
-    const response = await fetch(`https://geocode.maps.co/reverse?lat=${lat}&lon=${long}`)
-    const data = await response.json();
-    console.log(data.address.state_district);
-    setCurrentDistrictName(data.address.state_district)
-  }
-
+  const [AddOrder, setAddOrder] = useState(false);
+  const [CurrentWarehouse, setCurrentWarehouse] = useState([]);
+  
   const [isLoading, setisLoading] = useState(true);
   const [UserType, setUserType] = useState('')
   const [ShowNavbar, setShowNavbar] = useState(false);
@@ -51,43 +26,49 @@ const Dashboard = ({navigation}) => {
         setisLoading(false);
         }
         fetchdata();
-        show_district()
     },[])
-    function approve_user(){
-      navigation.navigate('ApproveUser')
-    }
-    function logout(){
-      AsyncStorage.removeItem('Token');
-      AsyncStorage.setItem('IsLoggedIn','NotLoggedIn');
-      AsyncStorage.removeItem('role');
-      navigation.replace('Login');
+
+    const [District, setDistrict] = useState(null);
+    const [Latitude, setLatitude] = useState('');
+    const [Longitude, setLongitude] = useState('');
+    const [WarehouseDetails, setWarehouseDetails] = useState([]);
+
+    async function get_location(){
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setErrorMsg('Permission to access location was denied');
+        return;
+      };
+      let location = await Location.getCurrentPositionAsync({});
+      let coords = location['coords'];
+      setLatitude(coords['latitude']);
+      setLongitude(coords['longitude']);
+      const response = await fetch(`https://geocode.maps.co/reverse?lat=${coords['latitude']}&lon=${coords['longitude']}`)
+      const data = await response.json();
+      setDistrict(data.address.state_district);
     };
 
-    const [District, setDistrict] = useState([]);
+      async function get_warehouse(District){
+        const response = await fetch(`${Url()}/get_warehouse/${District}`)
+        const data = await response.json();
+        setWarehouseDetails(data.warehouses);
+      }  
 
-    async function show_district(){
-      const response =await fetch('http://192.168.3.54:1000/list_all_district')
-      const data = await response.json();
-      setDistrict(data.district)
-    }
-    const [CurrentDistrictNo, setCurrentDistrictNo] = useState(1);
+    useEffect(() => {
+      if (District === null) {
+        // console.log('No location set')
+      }
+      else{
+        get_warehouse(District);
+      }
+    }, [District]);
 
-    // Get warehouse details
-    const [Warehouse, setWarehouse] = useState([]);
-    useEffect(()=>{
-      getWarehouseinlocation();
-    },[CurrentDistrictNo])
-    async function getWarehouseinlocation(){
-      const response = await fetch(`${Url()}/get_warehouse/${(CurrentDistrictNo).toString()}`);
-      const data = await response.json();
-      setWarehouse(data.warehouses);
-    }
+    
 
     useFocusEffect(
       React.useCallback(() => {
-        setShowNavbar(false); // Update the shownavbar state when the screen regains focus
+        setShowNavbar(false);
         return () => {
-          // Cleanup function when screen loses focus
         };
       }, [])
     );
@@ -96,6 +77,12 @@ const Dashboard = ({navigation}) => {
       return(
         <Loading/>
       )
+    }
+    // const [CurrentWarehouse, setCurrentWarehouse] = useState([])
+    // const [AddOrder, setAddOrder] = useState(false);
+    function add_order(details){
+      setCurrentWarehouse(details);
+      setAddOrder(true);
     }
 
   return (
@@ -107,7 +94,7 @@ const Dashboard = ({navigation}) => {
           <Text></Text>
         </View>
         <View style={{borderWidth:1, borderColor:'white'}}></View>
-        <View style={{height:'30%', backgroundColor:'white'}}>
+        <View style={{height:'100%', backgroundColor:'white'}}>
           <View>
             <Text>Welcome {UserType},</Text>
             <View>
@@ -128,54 +115,45 @@ const Dashboard = ({navigation}) => {
                 </View>
               </View>
               }
+
+
               {UserType === 'farmer' && 
-              <View>
+              <View style={{}}>
                 <Text>Hello farmer</Text>
-                <View style={{borderWidth:1}}>
-                  <Text style={{textAlign:'center', color:'orange', fontSize:28}}>Enter Location</Text>
-                  <View id='availability_form'>
-                    <View style={{flexDirection:'row', alignItems:'center', paddingHorizontal:5, columnGap:10}}>
-                      <Text style={{fontSize:25, textDecorationLine:'underline'}}>Select District</Text>
-                      <Dropdown
-                        style={{borderWidth:1, paddingLeft:10, paddingRight:10, width:'40%'}}
-                        data={District}    
-                        search
-                        searchPlaceholder="Search District"
-                        placeholder={CurrentDistrictName}
-                        maxHeight='80%'
-                        labelField="district"
-                        valueField="district"
-                        value={'district'}
-                        onChange={item => {
-                          setCurrentDistrictNo(item.id);
-                          setCurrentDistrictName(item.district);
-                        // style={{borderWidth:1, paddingLeft:10, paddingRight:10, height:25}}
-                        // data={District}
-                        // maxHeight={250}
-                        // labelField="label"
-                        // valueField="value"
-                        // value={'district'}
-                        // onFocus={() => setIsFocus(true)}
-                        // onBlur={() => setIsFocus(false)}
-                        // onChange={item => {
-                        //   setCurrentDistrictNo(item.id);
-                        }}
-                      />
-                      <EvilIcons onPress={()=>getLocation()} name="location" size={40} color="black" />
-                    </View>
-                    <Text>{CurrentDistrictNo}</Text>
+                <View id='Form_box' style={{borderWidth:1, paddingHorizontal:10, paddingVertical:5, marginBottom:'1%'}}>
+                  <Text id='Form_box_title' style={{fontSize:18, fontWeight:'bold'}}>Enter Location to Find Nearby Warehouses</Text>
+                  <View id='Enter_district' style={{flexDirection:'row', gap:10}}>
+                    <Text>Select District</Text>
+                    <TextInput value={District} style={{borderWidth:1, width:'50%', fontSize:18, padding:3}}/>
+                    {/* <Dropdown/> */}
+                    <EvilIcons onPress={()=>get_location()} name="location" size={40} color="black"/>
                   </View>
+                </View>
+                {/* <View>
+                  <View style={{paddingHorizontal:20, paddingTop:20}}>
+                    {WarehouseDetails.map((warehouse, index) => (
+                      <Warehousedetails key={index} details={warehouse}/>
+                    ))}
+                  </View>
+                </View> */}
+                <Text style={{paddingHorizontal:10, fontSize:20, textDecorationLine:'underline'}}>Available Warehouses</Text>
+                <View style={{height:'60%', borderWidth:2}}>
+                  <FlatList
+                    style={{}}
+                    data={WarehouseDetails} // Pass the data array
+                    keyExtractor={(item, index) => index.toString()} // Provide a unique key for each item
+                    renderItem={({ item }) => <Warehousedetails details={item} latitude={Latitude} longitude={Longitude} add_order={add_order}/>} // Render each item using Warehousedetails component
+                  />
                 </View>
               </View>
               }
+
+
               {UserType === 'transporter' && 
               <View><Text>Hello transporter</Text></View>
               }
             </View>
           </View>
-        </View>
-        <View style={{height:'50%', backgroundColor:'black'}}>
-
         </View>
       </View>
       
@@ -183,6 +161,10 @@ const Dashboard = ({navigation}) => {
       <View style={{ flex:1,width:200,}}>
         {ShowNavbar && <Navbar navigation={navigation} path={'dashboard'} setShowNavbar={setShowNavbar}/>}
       </View>
+      </Modal>
+
+      <Modal visible={AddOrder} transparent={true}>
+              <Placeorder warehouse_details={CurrentWarehouse} setAddOrder={setAddOrder}/>
       </Modal>
     </View>
   )
@@ -202,3 +184,85 @@ const styles = StyleSheet.create({
       height:'5%'
     }
 })
+
+
+const Warehousedetails = ({details, latitude, longitude, add_order}) => {
+  return(
+  <View style={{ borderWidth:2, paddingHorizontal:10, marginBottom:1 }}>
+  <Text>Id:{details.id}</Text>
+  <Text>Name:{details.name}</Text>
+  <Text>Phone:{details.phone}</Text>
+  <Text>Type:{details.warehouse_type}</Text>
+  <Text>Id:{details.warehouse_global_id}</Text>
+  <Text>District:{details.district}</Text>
+  <Text>{details.latitude} {latitude} {details.longitude} {longitude}</Text>
+  <View style={{flexDirection:'row', alignItems:'center',}}>
+    <Text style={{}}><AntDesign name="pluscircle" size={24} color="black" onPress={()=>add_order(details)}/> Book the place to store the Product</Text>
+  </View>
+  </View>
+  )
+}
+
+const Placeorder = ({warehouse_details, setAddOrder}) => {
+  const product = [
+    {label : '🍅 Tomato', value: 'tomato'},
+    {label : '🥔 potato', value: 'potato'},
+    {label : '🥒 cucumber', value: 'cucumber'},
+    {label : '🥕 carrot', value: 'carrot'},
+    {label : '🍌 banana', value: 'banana'},
+    {label : '🍆 brinjal', value: 'brinjal'}
+  ]
+
+  const [value, setValue] = useState('')
+  const [Quantity, setQuantity] = useState()
+
+  // async function PlaceOrder(){
+  //   const response = await fetch('')
+  // }
+
+  async function Bookspace(){
+    const token = await AsyncStorage.getItem('Token');
+    try{
+      const response = await fetch(`${Url()}/placeorder`,{
+        method : 'POST',
+        headers:{
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'  
+        },
+        body: JSON.stringify({'product' : value, 'quantity':Quantity, 'warehouse_id': warehouse_details.id})
+      })
+      const data = await response.json()
+      if (data.status){
+        setAddOrder(false)
+      }
+    }
+    catch (error){
+      console.warn(error)
+    }
+  }
+
+  return(
+    <View style={{flex:1,  justifyContent:'center', alignItems:'center'}}>
+      <View style={{backgroundColor:'white', padding:20, borderWidth:1, borderRadius:20}}>
+        <Text style={{fontSize:20, fontWeight:'bold'}}>{warehouse_details.name}</Text>
+        <Text>Contact Us:{warehouse_details.phone}</Text>
+        <View style={{width:'100%'}}>
+        <Dropdown 
+          style={{borderWidth:1, paddingLeft:10, paddingRight:10, height:25, width:200}}
+          data={product}
+          maxHeight={250}
+          labelField="label"
+          valueField="value"
+          value={value}
+          onChange={item => {
+            setValue(item.value);
+          }}
+          />
+          </View>
+        <TextInput placeholder='Quantity' keyboardType='decimal-pad' value={Quantity} onChangeText={(Text)=>setQuantity(Text)}/>
+        <Button title='Book Space' onPress={()=>Bookspace()}/>
+        <Button title='Close' onPress={()=>setAddOrder(false)}/> 
+      </View>
+    </View>
+  )
+}

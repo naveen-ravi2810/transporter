@@ -4,7 +4,7 @@ from flask import jsonify, request
 
 
 class Warehouse(Resource):
-    def get(self, id):
-        cursor.execute('select * from warehouse where id = %s',(id))
+    def get(self, district):
+        cursor.execute('select * from warehouse where district = %s',(district))
         warehouses = cursor.fetchall()
-        return jsonify({'warehouses':id})
+        return jsonify({'warehouses':warehouses})
