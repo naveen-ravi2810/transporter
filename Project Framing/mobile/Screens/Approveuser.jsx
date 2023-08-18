@@ -152,7 +152,6 @@ const Approveuser = ({navigation}) => {
     };
 
     async function add_new_user(){
-      console.warn("Wanr")
       try{
         const token = await AsyncStorage.getItem('Token');
         const response = await fetch(`${Url()}/approveuser/${EditUser.id}/${EditUser.role}`,{

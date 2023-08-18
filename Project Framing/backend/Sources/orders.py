@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_restful import Resource
-from Models.auth import farmer_required,get_jwt
+from Models.auth import farmer_required,get_jwt, transporter_required
 from Models.tables import conn,cursor
 
 import datetime
@@ -32,7 +32,7 @@ class OrdersforFarmer(Resource):
                        INNER JOIN transporters t ON o.transporter_id = t.id
                        where o.farmer_id = %s ''', (farmer_id))
         confirmed_orders = cursor.fetchall()
-        print(confirmed_orders)
+        # print(unconfirmed_orders)
         return jsonify({'status':True, 'unconfirmed_orders':unconfirmed_orders, 'confirmed_orders':confirmed_orders})
     
     @farmer_required()
@@ -48,3 +48,19 @@ class OrdersforFarmer(Resource):
                         values (%s,%s,%s,%s,%s)''',(farmer_id, warehouse_id, product, quantity, current_time_kolkata))
         conn.commit()
         return jsonify({'status':True})
+    
+
+class TransporterAcceptanceResource(Resource):
+    @transporter_required()
+    def get(self):
+        claims = get_jwt()
+        transporter_id = claims['sub']
+        cursor.execute('''select district from transporters where id = %s''', transporter_id)
+        district = cursor.fetchone()
+        # print(district['district'])
+        cursor.execute(''' select * from productorders o
+                       INNER JOIN warehouse w ON o.warehouse_id = w.id 
+                       where w.district = %s''', district['district'])
+        available_orders = cursor.fetchall()
+        # print(available_orders)
+        return jsonify({'status':True, 'available_orders' : available_orders})

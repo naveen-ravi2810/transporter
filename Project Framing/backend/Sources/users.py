@@ -91,9 +91,13 @@ class ApproveUser(Resource):
             vehicle_number = data['vehicle_number']
             vehicle_name = data['vehicle_name']
             license_number = data['license_number']
+            # Some Location Information
+            cursor.execute('''select * from users where id =%s''',(int(userid)))
+            user_location = cursor.fetchone()
+            district = user_location['district']
             cursor.execute('''insert into transporters (id, name, phone, vehicle_number, vehicle_name, 
-            license_number, address) values (%s, %s, %s, %s, %s, %s, %s )''',(userid, 
-            name, phone, vehicle_number, vehicle_name, license_number, address))
+            license_number, address, district) values (%s, %s, %s, %s, %s, %s, %s, %s )''',(userid, 
+            name, phone, vehicle_number, vehicle_name, license_number, address, district))
             conn.commit()
             return jsonify({'status':True})
         else :

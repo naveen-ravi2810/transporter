@@ -1,4 +1,4 @@
-import { Button, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, FlatList } from 'react-native'
+import { Button, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, FlatList, Image, ImageBackground } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Loading from '../Components/Loading';
@@ -10,7 +10,9 @@ import Url from '../Components/Url';
 import { EvilIcons } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
 import * as Location from 'expo-location';
-
+import welcomefarmer from './../assets/old-farmer-scar-on-face-straw-helmet-hat-line-art-mascot-logo-beautiful-vector-art-design-its-422500902.png'
+import farmerbackground from './../assets/green-field-tree-blue-skygreat-as-backgroundweb-banner-generative-ai.jpg'
+// import adminbackground from './../'
 const Dashboard = ({navigation}) => {
   
   const [AddOrder, setAddOrder] = useState(false);
@@ -26,7 +28,29 @@ const Dashboard = ({navigation}) => {
         setisLoading(false);
         }
         fetchdata();
-    },[])
+      },[])
+      
+      const [TransporterAvailableOrders, setTransporterAvailableOrders] = useState([])
+    async function get_orders(){
+      const token = await AsyncStorage.getItem('Token');
+      const resp = await fetch(`${Url()}/transport_view`,{
+        method:'GET',
+        headers:{
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'  
+        },
+      })
+      const data = await resp.json()
+      setTransporterAvailableOrders(data.available_orders)
+      setisLoading(false)
+    }
+    useEffect(()=>{
+      if(UserType === "transporter"){
+        setisLoading(true)
+        get_orders()
+      }
+    },[UserType])
+
 
     const [District, setDistrict] = useState(null);
     const [Latitude, setLatitude] = useState('');
@@ -86,17 +110,29 @@ const Dashboard = ({navigation}) => {
     }
 
   return (
-    <View style={{flex:1,backgroundColor:'lightgreen'}}>
+    // <ImageBackground 
+    // source={farmerbackground}
+    // style={{ flex: 1, resizeMode: 'cover' }}
+    // >
+    <View style={{flex:1}}>
       <View style={styles.dashboard_view}>
         <View style={styles.page_heading}>
           <Text onPress={()=>setShowNavbar(true)} style={{paddingLeft:10}}><Entypo name="menu" size={24} color="black" /></Text>
           <Text style={{fontSize:20, color:'white', fontWeight:'bold'}}>DASHBOARD</Text>
           <Text></Text>
         </View>
-        <View style={{borderWidth:1, borderColor:'white'}}></View>
-        <View style={{height:'100%', backgroundColor:'white'}}>
+        <View style={{borderWidth:1}}></View>
+        <View style={{height:'100%'}}>
+          <View style={{flexDirection:'row', justifyContent:'center', alignItems:'center', height:'30%', paddingTop:30, paddingHorizontal:30}}>
+          { UserType === 'farmer' &&
+             <Image source={welcomefarmer} style={{width:'100%', height:'100%'}}/>
+          }{
+            UserType === 'admin' && 
+              <Image source={{uri: 'https://www.turbotech-aero.com/wp-content/uploads/2019/07/team-guerlin.jpg'}} style={{width:'60%', height:'100%'}}/>
+          }
+          </View>
           <View>
-            <Text>Welcome {UserType},</Text>
+            <Text style={{textAlign:'center', fontSize:30, textTransform:'capitalize', fontFamily:'sans-serif-medium'}}>Welcome {UserType}</Text>
             <View>
               {UserType === 'warehouse' && 
               <View>
@@ -118,11 +154,10 @@ const Dashboard = ({navigation}) => {
 
 
               {UserType === 'farmer' && 
-              <View style={{}}>
-                <Text>Hello farmer</Text>
-                <View id='Form_box' style={{borderWidth:1, paddingHorizontal:10, paddingVertical:5, marginBottom:'1%'}}>
-                  <Text id='Form_box_title' style={{fontSize:18, fontWeight:'bold'}}>Enter Location to Find Nearby Warehouses</Text>
-                  <View id='Enter_district' style={{flexDirection:'row', gap:10}}>
+              <View style={{}}>              
+                <View id='Form_box' style={{ paddingHorizontal:10, paddingVertical:5, marginBottom:'1%'}}>
+                  <Text id='Form_box_title' style={{fontSize:18, fontWeight:'bold', marginBottom:'5%'}}>Enter Location to Find Nearby Warehouses</Text>
+                  <View id='Enter_district' style={{flexDirection:'row', justifyContent:'space-between', paddingHorizontal:'10%'}}>
                     <Text>Select District</Text>
                     <TextInput value={District} style={{borderWidth:1, width:'50%', fontSize:18, padding:3}}/>
                     {/* <Dropdown/> */}
@@ -137,7 +172,7 @@ const Dashboard = ({navigation}) => {
                   </View>
                 </View> */}
                 <Text style={{paddingHorizontal:10, fontSize:20, textDecorationLine:'underline'}}>Available Warehouses</Text>
-                <View style={{height:'60%', borderWidth:2}}>
+                <View style={{height:'60%'}}>
                   <FlatList
                     style={{}}
                     data={WarehouseDetails} // Pass the data array
@@ -152,6 +187,13 @@ const Dashboard = ({navigation}) => {
               {UserType === 'transporter' && 
               <View><Text>Hello transporter</Text></View>
               }
+              <Text style={{fontSize:28}}>Some messages</Text>
+              <FlatList
+              style = {{borderWidth:1, height:'50%', borderBottomWidth:0,marginHorizontal:10, borderLeftWidth:0, borderRightWidth:0, marginTop:30}}
+              data={TransporterAvailableOrders}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={({ item }) => <Waiting_orders details={item}/>}
+              />
             </View>
           </View>
         </View>
@@ -167,6 +209,7 @@ const Dashboard = ({navigation}) => {
               <Placeorder warehouse_details={CurrentWarehouse} setAddOrder={setAddOrder}/>
       </Modal>
     </View>
+    // </ImageBackground>
   )
 }
 
@@ -263,6 +306,16 @@ const Placeorder = ({warehouse_details, setAddOrder}) => {
         <Button title='Book Space' onPress={()=>Bookspace()}/>
         <Button title='Close' onPress={()=>setAddOrder(false)}/> 
       </View>
+    </View>
+  )
+}
+
+const Waiting_orders = ({details}) => {
+  return(
+    <View style={{paddingHorizontal:10, borderTopWidth:2}}>
+      <Text>{details.order_no}</Text>
+      <Text>{details.product}</Text>
+      <Text></Text>
     </View>
   )
 }

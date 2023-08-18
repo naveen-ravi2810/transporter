@@ -93,7 +93,7 @@ const Register = ({navigation}) => {
           </View>
         </View>
         {
-          userrole === "warehouse" && 
+          (userrole === "warehouse" || userrole ===  "transporter")  && 
           <View>
           <View id='Location_get' style={{marginTop:'2%',borderRadius:20,paddingLeft:10,paddingVertical:10,flexDirection:'row',marginHorizontal:10, borderWidth:1, alignItems:'center'}}>
             <Text style={{marginRight:'3%'}}><EvilIcons style={{}} onPress={()=>get_location()} name="location" size={30} color="darkgreen"/></Text>

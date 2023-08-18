@@ -24,7 +24,10 @@ const OnboardingScreen = ({navigation}) => {
           image: (
             <Image
               source={ logo }
-              style={{height:250, width:350, paddingTop:20, borderRadius:30}}
+              style={{
+                // height:250, width:350, paddingTop:20, borderRadius:30,
+                resizeMode:'contain',
+              paddingHorizontal:30}}
             />
           ),
           title: "Set Your produts To see by everyone",

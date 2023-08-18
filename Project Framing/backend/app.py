@@ -24,8 +24,9 @@ api.add_resource(Profile, '/profile')
 
 api.add_resource(Warehouse, '/get_warehouse/<string:district>')
 
-from Sources.orders import OrdersforFarmer
+from Sources.orders import OrdersforFarmer,TransporterAcceptanceResource
 api.add_resource(OrdersforFarmer, '/placeorder')
+api.add_resource(TransporterAcceptanceResource, '/transport_view')
 
 def get_ipv4_address():
     hostname = socket.gethostname()

@@ -1,4 +1,4 @@
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View, Image } from 'react-native';
+import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View, Image, ImageBackground } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { AntDesign, Entypo } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -6,6 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Url from '../Components/Url';
 import Loading from '../Components/Loading';
 import logo from "./../assets/logo.png"
+import farmerbackground from './../assets/green-field-tree-blue-skygreat-as-backgroundweb-banner-generative-ai.jpg'
 
 const Login = () => {
     const navigation = useNavigation();
@@ -41,7 +42,12 @@ const Login = () => {
     }
 
   return (
+    <ImageBackground
+    source={farmerbackground}
+    style={{ flex: 1, resizeMode: 'cover' }}
+    >
     <View style={styles.login_page} >
+
         <View style={styles.logoContainer}>
             <Image source={logo} style={styles.logo} />
         </View>
@@ -57,9 +63,9 @@ const Login = () => {
                 <TextInput secureTextEntry= {ShowPassword ? false: true } style={styles.password_input} onChangeText={(Text)=>setuserPassword(Text)}/>
                 {
                     ShowPassword ? 
-                    <AntDesign name="eye" size={24} color="black" onPress={()=>setShowPassword(!ShowPassword)}/>
+                    <AntDesign name="eye" size={24} color="white" onPress={()=>setShowPassword(!ShowPassword)}/>
                     :
-                    <Entypo name="eye-with-line" size={24} color="black" onPress={()=>setShowPassword(!ShowPassword)}/>
+                    <Entypo name="eye-with-line" size={24} color="white" onPress={()=>setShowPassword(!ShowPassword)}/>
                 }
             </View>
         </View>
@@ -69,9 +75,10 @@ const Login = () => {
             </TouchableOpacity>
         </View>
         <View style={styles.create_account}>
-            <Text>Need to be a vendor </Text><Text style={styles.create_account_link} onPress={()=>navigation.navigate('Register')}>Create accoiunt</Text>
+            <Text style={{color:'white'}}>Need to be a vendor </Text><Text style={styles.create_account_link} onPress={()=>navigation.navigate('Register')}>Create accoiunt</Text>
         </View>
     </View>
+    </ImageBackground>
   )
 }
 
@@ -81,7 +88,6 @@ const styles = StyleSheet.create({
     login_page:{
         paddingVertical:'25%',
         flex:1,
-        
     },
     password_field:{
         flexDirection:'row',
@@ -89,33 +95,40 @@ const styles = StyleSheet.create({
         justifyContent:'space-between',
         borderWidth:1,
         borderRadius:20,
-        paddingHorizontal:'5%'
+        paddingHorizontal:'5%',
+        borderColor:'white'
     },
     mobile_number_input:{
         borderRadius:20,
         borderWidth:1,
-        borderColor:'black',
+        borderColor:'white',
         height:50,
-        paddingLeft:10
+        paddingLeft:10,
+        color:'white'
     },
     mobile_number_field:{
         paddingTop:20,
     },
     mobile_number:{
         fontSize:20,
-        paddingBottom:10
+        paddingBottom:10,
+        color:'white'
     },
     password:{
         fontSize:20,
         paddingTop:20,
-        paddingBottom:10
+        paddingBottom:10,
+        color:'white'
     },
     password_input:{
         height:50,
-        width:'90%'
+        width:'90%',
+        borderColor:'white',
+        color:'white'
     },
     create_account:{
-        flexDirection:'row'
+        flexDirection:'row',
+        justifyContent:'center'
     },
     create_account_link:{
         color:'blue'

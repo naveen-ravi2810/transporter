@@ -1,9 +1,13 @@
-import { FlatList, Modal, StyleSheet, Text, View } from 'react-native'
+import { FlatList, Image, ImageBackground, Modal, StyleSheet, Text, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { Entypo } from '@expo/vector-icons';
 import Navbar from '../Components/Navbar';
 import Url from './../Components/Url'
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import trackorderslogo from './../assets/pin-location-with-box-for-shipment-tracker-tracking-track-order-concept-illustration-flat-design-icon-sign-symbol-button-logo-stock-eps10-vector.jpg'
+import confirmed_orders_logo from './../assets/food-delivery-1-1024x576.png'
+import tractorders_bg from './../assets/pngtree-3d-illustration-of-a-warehouse-for-distribution-picture-image_3758152.jpg'
+
 const TrackOrders = ({navigation}) => {
     const [ShowNavbar, setShowNavbar] = useState(false);
 
@@ -27,33 +31,47 @@ const TrackOrders = ({navigation}) => {
     },[])
 
   return (
-    <View style={{flex:1,backgroundColor:'lightgreen', paddingVertical:20, paddingHorizontal:10}}>
+    <ImageBackground 
+    source={tractorders_bg}
+    style={{width:'100%', height:'100%'}}
+    >
+    <View style={{flex:1,backgroundColor:'white', paddingVertical:20, paddingHorizontal:10}}>
         <View>
             <View style={styles.page_heading}>
             <Text onPress={()=>setShowNavbar(true)} style={{paddingLeft:10}}><Entypo name="menu" size={24} color="black" /></Text>
+            <View style={{flexDirection:'row', gap:5}}>
+            <Image source={trackorderslogo} style={{width:'15%', height:'100%'}}/>
             <Text style={{fontSize:20, color:'white', fontWeight:'bold'}}>TRACK ORDERS</Text>
+            </View>
             <Text></Text>
             <View>
             </View>
             </View>
             
-            <View style={{marginTop:'5%', height:'45%', borderWidth:1}}>
-            <Text style={{backgroundColor:'black', color:'white', textAlign:'center', fontSize:18}}>ConfirmedOrdered List</Text>
+            <View style={{marginTop:'5%', height:'45%', paddingHorizontal:'10%'}}>
+            <Text style={{ color:'#28BA13', textAlign:'center', fontSize:18, textTransform:'uppercase', paddingBottom:10}}>ConfirmedOrdered List</Text>
+            <ImageBackground
+            source={confirmed_orders_logo}
+            style={{width:'100%', height:'95%', flexDirection:'row', justifyContent:'center'}}
+            >
             {confirmed_orders.length != 0 ? 
             <FlatList
             style={{}}
             data={confirmed_orders} // Pass the data array
             keyExtractor={(item, index) => index.toString()} // Provide a unique key for each item
             renderItem={({ item }) => <Confirmed_orders_view details={item}/>} // Render each item using Warehousedetails component
-          />:
-          <Text style={{fontSize:15, textAlign:'center'}} >🚫No orders</Text>
-        }
+            />:
+            <View style={{flex:1,flexDirection:'row', alignItems:'center', justifyContent:'center'}}>
+              <Text style={{fontSize:25, textAlign:'center', color:'red'}} >🚫No orders</Text>
             </View>
-            <View style={{marginTop:'5%',height:'45%', borderWidth:1}}>
-              <Text style={{backgroundColor:'black', color:'white', textAlign:'center', fontSize:18}}>UnConfirmedOrdered List</Text>
+          }
+          </ImageBackground>
+            </View>
+            <View style={{marginTop:'5%',height:'45%'}}>
+              <Text style={{ color:'#28BA13', textAlign:'center', fontSize:18, textTransform:'uppercase', paddingBottom:10}}>UnConfirmedOrdered List</Text>
               {unconfirmed_orders.length != 0 ? 
               <FlatList
-                      style={{}}
+                      style={{marginHorizontal:'10%',}}
                       data={unconfirmed_orders} // Pass the data array
                       keyExtractor={(item, index) => index.toString()} // Provide a unique key for each item
                       renderItem={({ item }) => <Unconfirmed_orders_view details={item}/>} // Render each item using Warehousedetails component
@@ -69,6 +87,7 @@ const TrackOrders = ({navigation}) => {
             </View>
       </Modal>
     </View>
+    </ImageBackground>
   )
 }
 
@@ -86,7 +105,7 @@ const styles = StyleSheet.create({
 
 const Confirmed_orders_view = ({}) => {
   return(
-    <View>
+      <View>
       <Text>{details.product}</Text>
     </View>
   )
@@ -94,11 +113,14 @@ const Confirmed_orders_view = ({}) => {
 
 const Unconfirmed_orders_view = ({details}) =>{
   return(
-    <View>
-      <Text>{details.order_no}</Text>
-      <Text>{details.product}</Text>
-      <Text>{details.warehouse_name}</Text>
-      <Text>{details.quantity}</Text>
+    <View style={{borderTopWidth:2, paddingTop:2, marginTop:2, backgroundColor:'white'}}>
+      <Text style={{color:'#BDA17D'}}>Order No : {details.order_no}</Text>
+      <View style={{flexDirection:'row', alignItems:'baseline', justifyContent:'space-between'}}>
+      <Text style={{fontSize:28, textTransform:'uppercase'}}>{details.product}</Text>
+      <Text>QTY : {details.quantity}</Text>
+      </View>
+      <Text style={{fontSize:8}}>{details.order_on}</Text>
+      <Text style={{fontSize:22}}>{details.warehouse_name}</Text>
       <Text>{details.warehouse_type}</Text>
     </View>
   )

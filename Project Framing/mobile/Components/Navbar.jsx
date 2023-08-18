@@ -41,9 +41,11 @@ const Navbar = ({navigation, setShowNavbar, path}) => {
         <TouchableOpacity onPress={()=>navigation.replace('Dashboard')} style={[styles.options, path == 'dashboard' && styles.activeoption]} disabled={path == 'dashboard'? true : false}>
           <Text>Dashboard</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={()=>navigation.replace('TrackOrders')} style={[styles.options, path == 'trackorders' && styles.activeoption]}>
+        {
+          UserType != 'transporter' &&
+         <TouchableOpacity onPress={()=>navigation.replace('TrackOrders')} style={[styles.options, path == 'trackorders' && styles.activeoption]}>
           <Text>TrackOrders</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> }
         {
           UserType == 'admin' && 
           <TouchableOpacity onPress={()=>navigation.replace('ApproveUser')} style={[styles.options, path == 'approveuser' && styles.activeoption]}>
