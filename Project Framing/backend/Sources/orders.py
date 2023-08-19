@@ -55,7 +55,7 @@ class TransporterAcceptanceResource(Resource):
     def get(self):
         claims = get_jwt()
         transporter_id = claims['sub']
-        cursor.execute('''select district from transporters where id = %s''', transporter_id)
+        cursor.execute('''select district from transporters where id = %s''', int(transporter_id))
         district = cursor.fetchone()
         # print(district['district'])
         cursor.execute(''' select * from productorders o

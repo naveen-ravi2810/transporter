@@ -171,7 +171,7 @@ const Dashboard = ({navigation}) => {
                     ))}
                   </View>
                 </View> */}
-                <Text style={{paddingHorizontal:10, fontSize:20, textDecorationLine:'underline'}}>Available Warehouses</Text>
+                <Text style={{color:'#3EB4D4',paddingHorizontal:10, fontSize:20, textDecorationLine:'underline', textAlign:'center'}}>Available Warehouses</Text>
                 <View style={{height:'60%'}}>
                   <FlatList
                     style={{}}
@@ -240,7 +240,7 @@ const Warehousedetails = ({details, latitude, longitude, add_order}) => {
   <Text>District:{details.district}</Text>
   <Text>{details.latitude} {latitude} {details.longitude} {longitude}</Text>
   <View style={{flexDirection:'row', alignItems:'center',}}>
-    <Text style={{}}><AntDesign name="pluscircle" size={24} color="black" onPress={()=>add_order(details)}/> Book the place to store the Product</Text>
+    <Text style={{}}><AntDesign name="pluscircle" size={24} color="red" onPress={()=>add_order(details)}/> Book the place to store the Product</Text>
   </View>
   </View>
   )
