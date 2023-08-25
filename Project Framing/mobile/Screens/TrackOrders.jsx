@@ -14,20 +14,30 @@ const TrackOrders = ({navigation}) => {
     const [unconfirmed_orders, setunconfirmed_orders] = useState([])
     const [confirmed_orders, setconfirmed_orders] = useState([])
     const [Orderdisplay, setOrderdisplay] = useState('confirmed');
+    
+    async function fetchfarmerorders(){
+      const token = await AsyncStorage.getItem('Token');
+      const response = await fetch(`${Url()}/placeorder`,{
+        method: 'GET',
+        headers:{
+          'Authorization': `Bearer ${token}`  
+        },
+      })
+      const data =await response.json()
+      setunconfirmed_orders(data.unconfirmed_orders)
+      setconfirmed_orders(data.confirmed_orders)
+    }
+   
+    async function fetchusertype(){
+      const UserType = await AsyncStorage.getItem('role')
+      return UserType
+    }
+
     useEffect(()=>{
-      async function fetchorders(){
-        const token = await AsyncStorage.getItem('Token');
-        const response = await fetch(`${Url()}/placeorder`,{
-          method: 'GET',
-          headers:{
-            'Authorization': `Bearer ${token}`  
-          },
-        })
-        const data =await response.json()
-        setunconfirmed_orders(data.unconfirmed_orders)
-        setconfirmed_orders(data.confirmed_orders)
+      const type = fetchusertype()
+      if (type == "farmer"){
+        fetchfarmerorders()
       }
-      fetchorders()
     },[])
 
   return (

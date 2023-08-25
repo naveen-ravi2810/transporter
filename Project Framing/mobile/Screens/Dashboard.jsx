@@ -12,6 +12,7 @@ import { AntDesign } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import welcomefarmer from './../assets/old-farmer-scar-on-face-straw-helmet-hat-line-art-mascot-logo-beautiful-vector-art-design-its-422500902.png'
 import farmerbackground from './../assets/green-field-tree-blue-skygreat-as-backgroundweb-banner-generative-ai.jpg'
+import transporterbackground from './../assets/a-sexy-male-taxi-driver-sitting-in-his-car-hes-55-384982223.png'
 // import adminbackground from './../'
 const Dashboard = ({navigation}) => {
   
@@ -129,6 +130,9 @@ const Dashboard = ({navigation}) => {
           }{
             UserType === 'admin' && 
               <Image source={{uri: 'https://www.turbotech-aero.com/wp-content/uploads/2019/07/team-guerlin.jpg'}} style={{width:'60%', height:'100%'}}/>
+          }{
+            UserType === "transporter" &&
+            <Image source={transporterbackground} style={{width:'60%', height:'100%',}}/>
           }
           </View>
           <View>
@@ -172,28 +176,27 @@ const Dashboard = ({navigation}) => {
                   </View>
                 </View> */}
                 <Text style={{color:'#3EB4D4',paddingHorizontal:10, fontSize:20, textDecorationLine:'underline', textAlign:'center'}}>Available Warehouses</Text>
-                <View style={{height:'60%'}}>
+                {/* <View style={{height:'60%'}}> */}
                   <FlatList
-                    style={{}}
+                    style={{borderWidth:1, height:'60%', borderBottomWidth:0,marginHorizontal:10, borderLeftWidth:0, borderRightWidth:0, marginTop:30}}
                     data={WarehouseDetails} // Pass the data array
                     keyExtractor={(item, index) => index.toString()} // Provide a unique key for each item
                     renderItem={({ item }) => <Warehousedetails details={item} latitude={Latitude} longitude={Longitude} add_order={add_order}/>} // Render each item using Warehousedetails component
                   />
                 </View>
-              </View>
               }
 
 
               {UserType === 'transporter' && 
-              <View><Text>Hello transporter</Text></View>
-              }
+              <View><Text>Hello transporter</Text>
               <Text style={{fontSize:28}}>Some messages</Text>
               <FlatList
               style = {{borderWidth:1, height:'50%', borderBottomWidth:0,marginHorizontal:10, borderLeftWidth:0, borderRightWidth:0, marginTop:30}}
               data={TransporterAvailableOrders}
               keyExtractor={(item, index) => index.toString()}
               renderItem={({ item }) => <Waiting_orders details={item}/>}
-              />
+              /></View>
+            }
             </View>
           </View>
         </View>
@@ -233,14 +236,15 @@ const Warehousedetails = ({details, latitude, longitude, add_order}) => {
   return(
   <View style={{ borderWidth:2, paddingHorizontal:10, marginBottom:1 }}>
   <Text>Id:{details.id}</Text>
-  <Text>Name:{details.name}</Text>
-  <Text>Phone:{details.phone}</Text>
-  <Text>Type:{details.warehouse_type}</Text>
-  <Text>Id:{details.warehouse_global_id}</Text>
-  <Text>District:{details.district}</Text>
-  <Text>{details.latitude} {latitude} {details.longitude} {longitude}</Text>
-  <View style={{flexDirection:'row', alignItems:'center',}}>
-    <Text style={{}}><AntDesign name="pluscircle" size={24} color="red" onPress={()=>add_order(details)}/> Book the place to store the Product</Text>
+  <Text>Name : {details.name}</Text>
+  <Text>📞 {details.phone}</Text>
+  <Text style={{textTransform:'capitalize'}}>Type : {details.warehouse_type}</Text>
+  <Text>🪪 : {details.warehouse_global_id}</Text>
+  <Text>District : {details.district}</Text>
+  <Text>{details.latitude} {details.longitude} </Text>
+  <View style={{flexDirection:'column', alignItems:'center',paddingTop:5}}>
+    <Text style={{}}> Book the place to store the Product</Text>
+    <Text><AntDesign name="pluscircle" size={24} color="red" onPress={()=>add_order(details)}/></Text>
   </View>
   </View>
   )
@@ -314,8 +318,14 @@ const Waiting_orders = ({details}) => {
   return(
     <View style={{paddingHorizontal:10, borderTopWidth:2}}>
       <Text>{details.order_no}</Text>
-      <Text>{details.product}</Text>
+      <Text style={{textTransform:'uppercase', fontSize:20, textDecorationLine:'underline'}}>{details.product}</Text>
+      <Text>Quantity : {details.quantity}</Text>
+      <Text>Farmer:🔸{details.address}</Text>
+      <Text>📞 : {details.phone}</Text>
+      <Text>Warehouse:🔸{details.latitude} {details.longitude}</Text>
+      <Text>📞 : {details['w.phone']}</Text>
       <Text></Text>
+      <Button title='Accept_Order' />
     </View>
   )
 }

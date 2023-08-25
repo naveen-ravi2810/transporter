@@ -59,8 +59,10 @@ class TransporterAcceptanceResource(Resource):
         district = cursor.fetchone()
         # print(district['district'])
         cursor.execute(''' select * from productorders o
+                       INNER JOIN farmers f ON o.farmer_id = f.id
                        INNER JOIN warehouse w ON o.warehouse_id = w.id 
                        where w.district = %s''', district['district'])
         available_orders = cursor.fetchall()
+        print(available_orders)
         # print(available_orders)
         return jsonify({'status':True, 'available_orders' : available_orders})
